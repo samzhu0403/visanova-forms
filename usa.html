@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>美国签证刷位</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--tg-theme-bg-color, #fff);
+    color: var(--tg-theme-text-color, #000);
+    padding: 16px 16px 32px;
+    min-height: 100vh;
+  }
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: var(--tg-theme-hint-color, #888); margin-bottom: 20px; }
+  .section { margin-bottom: 18px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--tg-theme-hint-color, #555); }
+  input, select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--tg-theme-hint-color, #ddd);
+    border-radius: 10px;
+    font-size: 15px;
+    background: var(--tg-theme-secondary-bg-color, #f7f7f7);
+    color: var(--tg-theme-text-color, #000);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus { border-color: var(--tg-theme-button-color, #2196F3); }
+  .security-note {
+    background: #fff3e0; border: 1px solid #ff980022;
+    border-radius: 10px; padding: 10px 12px;
+    font-size: 12px; color: #e65100; margin-top: 6px;
+  }
+  .range-card {
+    border: 1.5px solid var(--tg-theme-hint-color, #ddd);
+    border-radius: 10px; padding: 12px; margin-bottom: 8px;
+    background: var(--tg-theme-secondary-bg-color, #f7f7f7);
+  }
+  .range-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .range-title { font-size: 13px; font-weight: 600; color: var(--tg-theme-hint-color, #555); }
+  .del-range {
+    background: #ff4d4d22; color: #ff4d4d;
+    border: none; border-radius: 6px; padding: 4px 10px;
+    font-size: 13px; cursor: pointer;
+  }
+  .range-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .range-label { font-size: 12px; color: var(--tg-theme-hint-color, #888); margin-bottom: 4px; }
+  .add-btn {
+    width: 100%; padding: 10px;
+    border: 1.5px dashed var(--tg-theme-hint-color, #aaa);
+    border-radius: 10px; background: transparent;
+    color: var(--tg-theme-button-color, #2196F3);
+    font-size: 14px; cursor: pointer; margin-top: 4px;
+  }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .submit-btn {
+    width: 100%; padding: 15px;
+    background: var(--tg-theme-button-color, #2196F3);
+    color: var(--tg-theme-button-text-color, #fff);
+    border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    margin-top: 24px;
+  }
+  .submit-btn:active { opacity: 0.85; }
+  .error { color: #ff4d4d; font-size: 12px; margin-top: 4px; display: none; }
+  .divider { height: 1px; background: var(--tg-theme-hint-color, #eee); opacity: 0.3; margin: 20px 0; }
+</style>
+</head>
+<body>
+<h2>🇺🇸 美国签证刷位</h2>
+<p class="subtitle">提交后我们将自动监控预约网站并为您抢占面签位置</p>
+
+<div class="section">
+  <label>递签城市</label>
+  <select id="city">
+    <option value="">请选择...</option>
+    <option value="北京">北京</option>
+    <option value="上海">上海</option>
+    <option value="广州">广州</option>
+    <option value="成都">成都</option>
+    <option value="沈阳">沈阳</option>
+    <option value="武汉">武汉</option>
+  </select>
+  <div class="error" id="err-city">请选择递签城市</div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <label>预约网站账号（邮箱）</label>
+  <input type="email" id="account" placeholder="your@email.com" autocomplete="off" />
+  <div class="security-note">🔒 账号信息仅用于刷位，加密传输，不会用于其他用途</div>
+  <div class="error" id="err-account">请填写预约网站账号</div>
+</div>
+
+<div class="section">
+  <label>预约网站密码</label>
+  <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" />
+  <div class="error" id="err-password">请填写密码</div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <label>刷位日期范围（可添加多段）</label>
+  <div id="range-list">
+    <div class="range-card">
+      <div class="range-header">
+        <span class="range-title">时间段 1</span>
+      </div>
+      <div class="range-row">
+        <div>
+          <div class="range-label">开始日期</div>
+          <input type="date" class="range-start" />
+        </div>
+        <div>
+          <div class="range-label">结束日期</div>
+          <input type="date" class="range-end" />
+        </div>
+      </div>
+    </div>
+  </div>
+  <button class="add-btn" onclick="addRange()">＋ 添加另一段时间</button>
+  <div class="error" id="err-range">请至少填写一个日期范围</div>
+</div>
+
+<div class="divider"></div>
+
+<div class="section">
+  <label>刷位成功通知方式</label>
+  <div class="row2">
+    <div>
+      <label style="font-size:12px">手机号码</label>
+      <input type="tel" id="notify-phone" placeholder="+86 138 0000 0000" />
+      <div class="error" id="err-phone">请填写手机号</div>
+    </div>
+    <div>
+      <label style="font-size:12px">邮箱</label>
+      <input type="email" id="notify-email" placeholder="your@email.com" />
+      <div class="error" id="err-email">请填写邮箱</div>
+    </div>
+  </div>
+</div>
+
+<button class="submit-btn" onclick="submitForm()">提交刷位申请 →</button>
+
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+
+  const today = new Date().toISOString().split('T')[0];
+  document.querySelectorAll('.range-start, .range-end').forEach(i => i.min = today);
+
+  let rangeCount = 1;
+  function addRange() {
+    rangeCount++;
+    const list = document.getElementById('range-list');
+    const card = document.createElement('div');
+    card.className = 'range-card';
+    card.innerHTML = `
+      <div class="range-header">
+        <span class="range-title">时间段 ${rangeCount}</span>
+        <button class="del-range" onclick="this.closest('.range-card').remove(); renumberRanges()">删除</button>
+      </div>
+      <div class="range-row">
+        <div><div class="range-label">开始日期</div><input type="date" class="range-start" min="${today}" /></div>
+        <div><div class="range-label">结束日期</div><input type="date" class="range-end" min="${today}" /></div>
+      </div>`;
+    list.appendChild(card);
+  }
+
+  function renumberRanges() {
+    document.querySelectorAll('.range-title').forEach((el, i) => {
+      el.textContent = `时间段 ${i + 1}`;
+    });
+    rangeCount = document.querySelectorAll('.range-card').length;
+  }
+
+  function showError(id, show, msg) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = show ? 'block' : 'none';
+      if (msg) el.textContent = msg;
+    }
+  }
+
+  function submitForm() {
+    let valid = true;
+
+    const city = document.getElementById('city').value;
+    showError('err-city', !city);
+    if (!city) valid = false;
+
+    const account = document.getElementById('account').value.trim();
+    showError('err-account', !account);
+    if (!account) valid = false;
+
+    const password = document.getElementById('password').value;
+    showError('err-password', !password);
+    if (!password) valid = false;
+
+    const ranges = [];
+    document.querySelectorAll('.range-card').forEach(card => {
+      const start = card.querySelector('.range-start').value;
+      const end = card.querySelector('.range-end').value;
+      if (start && end) ranges.push({ start, end });
+    });
+    showError('err-range', ranges.length === 0);
+    if (ranges.length === 0) valid = false;
+
+    const phone = document.getElementById('notify-phone').value.trim();
+    showError('err-phone', !phone);
+    if (!phone) valid = false;
+
+    const email = document.getElementById('notify-email').value.trim();
+    showError('err-email', !email);
+    if (!email) valid = false;
+
+    if (!valid) return;
+
+    const data = {
+      service: 'usa',
+      city,
+      account,
+      password,
+      date_ranges: ranges,
+      notify_phone: phone,
+      notify_email: email
+    };
+
+    tg.sendData(JSON.stringify(data));
+  }
+</script>
+</body>
+</html>

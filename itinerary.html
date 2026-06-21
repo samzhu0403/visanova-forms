@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>行程单信息</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--tg-theme-bg-color, #fff);
+    color: var(--tg-theme-text-color, #000);
+    padding: 16px;
+    min-height: 100vh;
+  }
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: var(--tg-theme-hint-color, #888); margin-bottom: 20px; }
+  .section { margin-bottom: 20px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--tg-theme-hint-color, #555); }
+  input, select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--tg-theme-hint-color, #ddd);
+    border-radius: 10px;
+    font-size: 15px;
+    background: var(--tg-theme-secondary-bg-color, #f7f7f7);
+    color: var(--tg-theme-text-color, #000);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus { border-color: var(--tg-theme-button-color, #2196F3); }
+  .dest-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .dest-row input { flex: 1; }
+  .icon-btn {
+    width: 40px; height: 40px;
+    border: none; border-radius: 10px; cursor: pointer;
+    font-size: 18px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .del-btn { background: #ff4d4d22; color: #ff4d4d; }
+  .add-btn {
+    width: 100%; padding: 10px;
+    border: 1.5px dashed var(--tg-theme-hint-color, #aaa);
+    border-radius: 10px; background: transparent;
+    color: var(--tg-theme-button-color, #2196F3);
+    font-size: 14px; cursor: pointer; margin-top: 4px;
+  }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .submit-btn {
+    width: 100%; padding: 15px;
+    background: var(--tg-theme-button-color, #2196F3);
+    color: var(--tg-theme-button-text-color, #fff);
+    border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    margin-top: 24px; letter-spacing: 0.3px;
+  }
+  .submit-btn:active { opacity: 0.85; }
+  .error { color: #ff4d4d; font-size: 12px; margin-top: 4px; display: none; }
+</style>
+</head>
+<body>
+<h2>✈️ 行程单</h2>
+<p class="subtitle">请填写以下信息，我们将为您生成专业行程单</p>
+
+<div class="section">
+  <label>出发地</label>
+  <input type="text" id="origin" placeholder="例：上海" />
+  <div class="error" id="err-origin">请填写出发地</div>
+</div>
+
+<div class="section">
+  <label>目的地（可添加多个）</label>
+  <div id="dest-list">
+    <div class="dest-row">
+      <input type="text" placeholder="例：巴黎" />
+    </div>
+  </div>
+  <button class="add-btn" onclick="addDest()">＋ 添加目的地</button>
+  <div class="error" id="err-dest">请至少填写一个目的地</div>
+</div>
+
+<div class="section row2">
+  <div>
+    <label>出发日期</label>
+    <input type="date" id="depart-date" />
+    <div class="error" id="err-depart">必填</div>
+  </div>
+  <div>
+    <label>返回日期</label>
+    <input type="date" id="return-date" />
+    <div class="error" id="err-return">必填</div>
+  </div>
+</div>
+
+<div class="section">
+  <label>生成语言</label>
+  <select id="lang">
+    <option value="zh">中文</option>
+    <option value="en">英文</option>
+    <option value="fr">法文</option>
+    <option value="de">德文</option>
+    <option value="ja">日文</option>
+  </select>
+</div>
+
+<button class="submit-btn" onclick="submitForm()">提交信息 →</button>
+
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+
+  // Set min dates
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('depart-date').min = today;
+  document.getElementById('return-date').min = today;
+
+  function addDest() {
+    const list = document.getElementById('dest-list');
+    const row = document.createElement('div');
+    row.className = 'dest-row';
+    row.innerHTML = `<input type="text" placeholder="例：伦敦" /><button class="icon-btn del-btn" onclick="this.parentElement.remove()">×</button>`;
+    list.appendChild(row);
+  }
+
+  function showError(id, show) {
+    document.getElementById(id).style.display = show ? 'block' : 'none';
+  }
+
+  function submitForm() {
+    let valid = true;
+
+    const origin = document.getElementById('origin').value.trim();
+    showError('err-origin', !origin);
+    if (!origin) valid = false;
+
+    const destInputs = document.querySelectorAll('#dest-list input');
+    const dests = Array.from(destInputs).map(i => i.value.trim()).filter(Boolean);
+    showError('err-dest', dests.length === 0);
+    if (dests.length === 0) valid = false;
+
+    const depart = document.getElementById('depart-date').value;
+    showError('err-depart', !depart);
+    if (!depart) valid = false;
+
+    const ret = document.getElementById('return-date').value;
+    showError('err-return', !ret);
+    if (!ret) valid = false;
+
+    if (!valid) return;
+
+    const data = {
+      service: 'itinerary',
+      origin,
+      destinations: dests,
+      depart_date: depart,
+      return_date: ret,
+      language: document.getElementById('lang').value
+    };
+
+    tg.sendData(JSON.stringify(data));
+  }
+</script>
+</body>
+</html>

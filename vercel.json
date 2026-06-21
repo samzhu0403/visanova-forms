@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/itinerary", "destination": "/itinerary.html" },
+    { "source": "/hotel", "destination": "/hotel.html" },
+    { "source": "/france", "destination": "/france.html" },
+    { "source": "/usa", "destination": "/usa.html" }
+  ]
+}

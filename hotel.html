@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>酒店预订单</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--tg-theme-bg-color, #fff);
+    color: var(--tg-theme-text-color, #000);
+    padding: 16px;
+    min-height: 100vh;
+  }
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: var(--tg-theme-hint-color, #888); margin-bottom: 20px; }
+  .section { margin-bottom: 20px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--tg-theme-hint-color, #555); }
+  input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--tg-theme-hint-color, #ddd);
+    border-radius: 10px;
+    font-size: 15px;
+    background: var(--tg-theme-secondary-bg-color, #f7f7f7);
+    color: var(--tg-theme-text-color, #000);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: var(--tg-theme-button-color, #2196F3); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .hint { font-size: 12px; color: var(--tg-theme-hint-color, #888); margin-top: 5px; }
+  .submit-btn {
+    width: 100%; padding: 15px;
+    background: var(--tg-theme-button-color, #2196F3);
+    color: var(--tg-theme-button-text-color, #fff);
+    border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    margin-top: 24px;
+  }
+  .submit-btn:active { opacity: 0.85; }
+  .error { color: #ff4d4d; font-size: 12px; margin-top: 4px; display: none; }
+</style>
+</head>
+<body>
+<h2>🏨 酒店预订单</h2>
+<p class="subtitle">填写信息后我们为您生成酒店预订确认单</p>
+
+<div class="section row2">
+  <div>
+    <label>入住日期</label>
+    <input type="date" id="checkin" />
+    <div class="error" id="err-checkin">必填</div>
+  </div>
+  <div>
+    <label>退房日期</label>
+    <input type="date" id="checkout" />
+    <div class="error" id="err-checkout">必填</div>
+  </div>
+</div>
+
+<div class="section">
+  <label>城市</label>
+  <input type="text" id="city" placeholder="例：巴黎" />
+  <div class="error" id="err-city">请填写城市</div>
+</div>
+
+<div class="section">
+  <label>入住人姓名拼音</label>
+  <input type="text" id="guest-name" placeholder="例：ZHANG SAN" style="text-transform:uppercase" />
+  <p class="hint">请按护照拼音填写，多人用逗号分隔</p>
+  <div class="error" id="err-name">请填写入住人姓名</div>
+</div>
+
+<button class="submit-btn" onclick="submitForm()">提交信息 →</button>
+
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('checkin').min = today;
+  document.getElementById('checkout').min = today;
+
+  document.getElementById('guest-name').addEventListener('input', function() {
+    this.value = this.value.toUpperCase();
+  });
+
+  function showError(id, show) {
+    document.getElementById(id).style.display = show ? 'block' : 'none';
+  }
+
+  function submitForm() {
+    let valid = true;
+
+    const checkin = document.getElementById('checkin').value;
+    showError('err-checkin', !checkin);
+    if (!checkin) valid = false;
+
+    const checkout = document.getElementById('checkout').value;
+    showError('err-checkout', !checkout);
+    if (!checkout) valid = false;
+
+    const city = document.getElementById('city').value.trim();
+    showError('err-city', !city);
+    if (!city) valid = false;
+
+    const name = document.getElementById('guest-name').value.trim();
+    showError('err-name', !name);
+    if (!name) valid = false;
+
+    if (!valid) return;
+
+    if (checkin >= checkout) {
+      showError('err-checkout', true);
+      document.getElementById('err-checkout').textContent = '退房日期须晚于入住日期';
+      return;
+    }
+
+    const data = {
+      service: 'hotel',
+      checkin_date: checkin,
+      checkout_date: checkout,
+      city,
+      guest_name: name
+    };
+
+    tg.sendData(JSON.stringify(data));
+  }
+</script>
+</body>
+</html>
