@@ -2,79 +2,146 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>酒店预订单</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: var(--tg-theme-bg-color, #f5f5f7);
+    --surface: var(--tg-theme-secondary-bg-color, #ffffff);
+    --text: var(--tg-theme-text-color, #1c1c1e);
+    --hint: var(--tg-theme-hint-color, #8e8e93);
+    --accent: var(--tg-theme-button-color, #007aff);
+    --accent-text: var(--tg-theme-button-text-color, #ffffff);
+    --border: rgba(0,0,0,0.08);
+    --radius: 14px;
+  }
+
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--tg-theme-bg-color, #fff);
-    color: var(--tg-theme-text-color, #000);
-    padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
+    padding-bottom: 100px;
   }
-  h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-  .subtitle { font-size: 13px; color: var(--tg-theme-hint-color, #888); margin-bottom: 20px; }
-  .section { margin-bottom: 20px; }
-  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--tg-theme-hint-color, #555); }
-  input {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1.5px solid var(--tg-theme-hint-color, #ddd);
-    border-radius: 10px;
-    font-size: 15px;
-    background: var(--tg-theme-secondary-bg-color, #f7f7f7);
-    color: var(--tg-theme-text-color, #000);
-    outline: none;
-    transition: border-color 0.2s;
+
+  .header {
+    background: var(--surface);
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
   }
-  input:focus { border-color: var(--tg-theme-button-color, #2196F3); }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .hint { font-size: 12px; color: var(--tg-theme-hint-color, #888); margin-top: 5px; }
+  .header-icon { font-size: 28px; margin-bottom: 6px; }
+  .header-title { font-size: 20px; font-weight: 700; letter-spacing: -0.4px; }
+  .header-sub { font-size: 13px; color: var(--hint); margin-top: 2px; }
+
+  .content { padding: 16px; }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .card-label {
+    font-size: 11px; font-weight: 600; color: var(--hint);
+    text-transform: uppercase; letter-spacing: 0.6px;
+    padding: 14px 16px 0;
+  }
+
+  .field {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .field:last-child { border-bottom: none; }
+  .field-label { font-size: 12px; color: var(--hint); font-weight: 500; }
+  .field input {
+    background: transparent; border: none; outline: none;
+    font-size: 16px; color: var(--text); width: 100%;
+    padding: 0; font-family: inherit; -webkit-appearance: none;
+  }
+  .field input::placeholder { color: var(--hint); opacity: 0.6; }
+
+  .date-row {
+    padding: 0 16px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .date-row:last-child { border-bottom: none; }
+  .date-cell { padding: 12px 0; display: flex; flex-direction: column; gap: 4px; }
+  .date-cell:first-child { border-right: 1px solid var(--border); padding-right: 16px; }
+  .date-cell:last-child { padding-left: 16px; }
+  .date-cell .field-label { font-size: 12px; color: var(--hint); font-weight: 500; }
+  .date-cell input {
+    background: transparent; border: none; outline: none;
+    font-size: 16px; color: var(--text); width: 100%;
+    font-family: inherit; -webkit-appearance: none;
+  }
+
+  .error-msg { font-size: 12px; color: #ff3b30; padding: 4px 16px 8px; display: none; }
+
+  .submit-wrap {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    padding: 12px 16px max(16px, env(safe-area-inset-bottom));
+    background: var(--bg); border-top: 1px solid var(--border);
+  }
   .submit-btn {
     width: 100%; padding: 15px;
-    background: var(--tg-theme-button-color, #2196F3);
-    color: var(--tg-theme-button-text-color, #fff);
+    background: var(--accent); color: var(--accent-text);
     border: none; border-radius: 12px;
-    font-size: 16px; font-weight: 700; cursor: pointer;
-    margin-top: 24px;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s; letter-spacing: -0.2px;
   }
-  .submit-btn:active { opacity: 0.85; }
-  .error { color: #ff4d4d; font-size: 12px; margin-top: 4px; display: none; }
+  .submit-btn:active { opacity: 0.8; }
 </style>
 </head>
 <body>
-<h2>🏨 酒店预订单</h2>
-<p class="subtitle">填写信息后我们为您生成酒店预订确认单</p>
 
-<div class="section row2">
-  <div>
-    <label>入住日期</label>
-    <input type="date" id="checkin" />
-    <div class="error" id="err-checkin">必填</div>
+<div class="header">
+  <div class="header-icon">🏨</div>
+  <div class="header-title">酒店预订单</div>
+  <div class="header-sub">为签证申请生成酒店预订文件 &nbsp;¥50</div>
+</div>
+
+<div class="content">
+
+  <div class="card">
+    <div class="card-label">入住信息</div>
+    <div class="date-row">
+      <div class="date-cell">
+        <div class="field-label">入住日期</div>
+        <input id="checkin" type="date" />
+      </div>
+      <div class="date-cell">
+        <div class="field-label">退房日期</div>
+        <input id="checkout" type="date" />
+      </div>
+    </div>
+    <div class="field" style="border-bottom:none">
+      <div class="field-label">目的地城市</div>
+      <input id="city" type="text" placeholder="例：巴黎" />
+    </div>
   </div>
-  <div>
-    <label>退房日期</label>
-    <input type="date" id="checkout" />
-    <div class="error" id="err-checkout">必填</div>
+  <div class="error-msg" id="err-dates">请选择入住和退房日期</div>
+  <div class="error-msg" id="err-city">请填写目的地城市</div>
+
+  <div class="card">
+    <div class="card-label">宾客信息</div>
+    <div class="field" style="border-bottom:none">
+      <div class="field-label">宾客姓名（与护照一致）</div>
+      <input id="guest" type="text" placeholder="例：Zhang San" />
+    </div>
   </div>
+  <div class="error-msg" id="err-guest">请填写宾客姓名</div>
+
 </div>
 
-<div class="section">
-  <label>城市</label>
-  <input type="text" id="city" placeholder="例：巴黎" />
-  <div class="error" id="err-city">请填写城市</div>
+<div class="submit-wrap">
+  <button class="submit-btn" onclick="submitForm()">提交申请 · ¥50</button>
 </div>
-
-<div class="section">
-  <label>入住人姓名拼音</label>
-  <input type="text" id="guest-name" placeholder="例：ZHANG SAN" style="text-transform:uppercase" />
-  <p class="hint">请按护照拼音填写，多人用逗号分隔</p>
-  <div class="error" id="err-name">请填写入住人姓名</div>
-</div>
-
-<button class="submit-btn" onclick="submitForm()">提交信息 →</button>
 
 <script>
   const tg = window.Telegram.WebApp;
@@ -85,50 +152,34 @@
   document.getElementById('checkin').min = today;
   document.getElementById('checkout').min = today;
 
-  document.getElementById('guest-name').addEventListener('input', function() {
-    this.value = this.value.toUpperCase();
-  });
-
-  function showError(id, show) {
+  function showErr(id, show) {
     document.getElementById(id).style.display = show ? 'block' : 'none';
   }
 
   function submitForm() {
-    let valid = true;
-
+    let ok = true;
     const checkin = document.getElementById('checkin').value;
-    showError('err-checkin', !checkin);
-    if (!checkin) valid = false;
-
     const checkout = document.getElementById('checkout').value;
-    showError('err-checkout', !checkout);
-    if (!checkout) valid = false;
+    showErr('err-dates', !checkin || !checkout);
+    if (!checkin || !checkout) ok = false;
 
     const city = document.getElementById('city').value.trim();
-    showError('err-city', !city);
-    if (!city) valid = false;
+    showErr('err-city', !city);
+    if (!city) ok = false;
 
-    const name = document.getElementById('guest-name').value.trim();
-    showError('err-name', !name);
-    if (!name) valid = false;
+    const guest = document.getElementById('guest').value.trim();
+    showErr('err-guest', !guest);
+    if (!guest) ok = false;
 
-    if (!valid) return;
+    if (!ok) return;
 
-    if (checkin >= checkout) {
-      showError('err-checkout', true);
-      document.getElementById('err-checkout').textContent = '退房日期须晚于入住日期';
-      return;
-    }
-
-    const data = {
+    tg.sendData(JSON.stringify({
       service: 'hotel',
       checkin_date: checkin,
       checkout_date: checkout,
       city,
-      guest_name: name
-    };
-
-    tg.sendData(JSON.stringify(data));
+      guest_name: guest,
+    }));
   }
 </script>
 </body>
