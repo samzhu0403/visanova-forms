@@ -2,164 +2,325 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>行程单信息</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>行程单</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: var(--tg-theme-bg-color, #f5f5f7);
+    --surface: var(--tg-theme-secondary-bg-color, #ffffff);
+    --text: var(--tg-theme-text-color, #1c1c1e);
+    --hint: var(--tg-theme-hint-color, #8e8e93);
+    --accent: var(--tg-theme-button-color, #007aff);
+    --accent-text: var(--tg-theme-button-text-color, #ffffff);
+    --border: rgba(0,0,0,0.08);
+    --radius: 14px;
+  }
+
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--tg-theme-bg-color, #fff);
-    color: var(--tg-theme-text-color, #000);
-    padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
+    padding-bottom: 100px;
   }
-  h2 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
-  .subtitle { font-size: 13px; color: var(--tg-theme-hint-color, #888); margin-bottom: 20px; }
-  .section { margin-bottom: 20px; }
-  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--tg-theme-hint-color, #555); }
-  input, select {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1.5px solid var(--tg-theme-hint-color, #ddd);
-    border-radius: 10px;
-    font-size: 15px;
-    background: var(--tg-theme-secondary-bg-color, #f7f7f7);
-    color: var(--tg-theme-text-color, #000);
+
+  .header {
+    background: var(--surface);
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-icon { font-size: 28px; margin-bottom: 6px; }
+  .header-title { font-size: 20px; font-weight: 700; letter-spacing: -0.4px; }
+  .header-sub { font-size: 13px; color: var(--hint); margin-top: 2px; }
+
+  .content { padding: 16px; }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .card-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--hint);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 14px 16px 0;
+  }
+
+  .field {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .field:last-child { border-bottom: none; }
+  .field-label {
+    font-size: 12px;
+    color: var(--hint);
+    font-weight: 500;
+  }
+  .field input, .field select {
+    background: transparent;
+    border: none;
     outline: none;
-    transition: border-color 0.2s;
+    font-size: 16px;
+    color: var(--text);
+    width: 100%;
+    padding: 0;
+    font-family: inherit;
+    -webkit-appearance: none;
+    appearance: none;
   }
-  input:focus, select:focus { border-color: var(--tg-theme-button-color, #2196F3); }
-  .dest-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-  .dest-row input { flex: 1; }
-  .icon-btn {
-    width: 40px; height: 40px;
-    border: none; border-radius: 10px; cursor: pointer;
-    font-size: 18px; display: flex; align-items: center; justify-content: center;
+  .field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238e8e93' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0 center;
+    padding-right: 20px;
+    cursor: pointer;
+  }
+  .field input::placeholder { color: var(--hint); opacity: 0.6; }
+
+  .date-row {
+    padding: 0 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+  .date-row:last-child { border-bottom: none; }
+  .date-cell {
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .date-cell:first-child { border-right: 1px solid var(--border); padding-right: 16px; }
+  .date-cell:last-child { padding-left: 16px; }
+  .date-cell .field-label { font-size: 12px; color: var(--hint); font-weight: 500; }
+  .date-cell input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: var(--text);
+    width: 100%;
+    font-family: inherit;
+    -webkit-appearance: none;
+  }
+
+  .dest-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dest-num {
+    width: 22px; height: 22px;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
     flex-shrink: 0;
   }
-  .del-btn { background: #ff4d4d22; color: #ff4d4d; }
-  .add-btn {
-    width: 100%; padding: 10px;
-    border: 1.5px dashed var(--tg-theme-hint-color, #aaa);
-    border-radius: 10px; background: transparent;
-    color: var(--tg-theme-button-color, #2196F3);
-    font-size: 14px; cursor: pointer; margin-top: 4px;
+  .dest-item input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: var(--text);
+    font-family: inherit;
   }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .dest-item input::placeholder { color: var(--hint); opacity: 0.6; }
+  .dest-del {
+    background: none;
+    border: none;
+    color: #ff3b30;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+  }
+  .add-dest {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+    color: var(--accent);
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .add-dest-icon {
+    width: 22px; height: 22px;
+    border: 1.5px solid var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; line-height: 1;
+  }
+
+  .error-msg {
+    font-size: 12px;
+    color: #ff3b30;
+    padding: 4px 16px 8px;
+    display: none;
+  }
+
+  .submit-wrap {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 12px 16px max(16px, env(safe-area-inset-bottom));
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
   .submit-btn {
-    width: 100%; padding: 15px;
-    background: var(--tg-theme-button-color, #2196F3);
-    color: var(--tg-theme-button-text-color, #fff);
-    border: none; border-radius: 12px;
-    font-size: 16px; font-weight: 700; cursor: pointer;
-    margin-top: 24px; letter-spacing: 0.3px;
+    width: 100%;
+    padding: 15px;
+    background: var(--accent);
+    color: var(--accent-text);
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    letter-spacing: -0.2px;
   }
-  .submit-btn:active { opacity: 0.85; }
-  .error { color: #ff4d4d; font-size: 12px; margin-top: 4px; display: none; }
+  .submit-btn:active { opacity: 0.8; }
 </style>
 </head>
 <body>
-<h2>✈️ 行程单</h2>
-<p class="subtitle">请填写以下信息，我们将为您生成专业行程单</p>
 
-<div class="section">
-  <label>出发地</label>
-  <input type="text" id="origin" placeholder="例：上海" />
-  <div class="error" id="err-origin">请填写出发地</div>
+<div class="header">
+  <div class="header-icon">✈️</div>
+  <div class="header-title">行程单</div>
+  <div class="header-sub">为签证申请生成行程文件 &nbsp;¥10</div>
 </div>
 
-<div class="section">
-  <label>目的地（可添加多个）</label>
-  <div id="dest-list">
-    <div class="dest-row">
-      <input type="text" placeholder="例：巴黎" />
+<div class="content">
+
+  <div class="card">
+    <div class="card-label">出发信息</div>
+    <div class="field">
+      <div class="field-label">出发地城市</div>
+      <input id="origin" type="text" placeholder="例：上海" />
+    </div>
+    <div class="date-row">
+      <div class="date-cell">
+        <div class="field-label">出发日期</div>
+        <input id="depart" type="date" />
+      </div>
+      <div class="date-cell">
+        <div class="field-label">返回日期</div>
+        <input id="return" type="date" />
+      </div>
     </div>
   </div>
-  <button class="add-btn" onclick="addDest()">＋ 添加目的地</button>
-  <div class="error" id="err-dest">请至少填写一个目的地</div>
-</div>
+  <div class="error-msg" id="err-origin">请填写出发地</div>
+  <div class="error-msg" id="err-dates">请选择出发和返回日期</div>
 
-<div class="section row2">
-  <div>
-    <label>出发日期</label>
-    <input type="date" id="depart-date" />
-    <div class="error" id="err-depart">必填</div>
+  <div class="card">
+    <div class="card-label">目的地</div>
+    <div id="dest-list">
+      <div class="dest-item">
+        <div class="dest-num">1</div>
+        <input type="text" placeholder="例：巴黎" class="dest-input" />
+      </div>
+    </div>
+    <div class="add-dest" onclick="addDest()">
+      <div class="add-dest-icon">+</div>
+      添加目的地
+    </div>
   </div>
-  <div>
-    <label>返回日期</label>
-    <input type="date" id="return-date" />
-    <div class="error" id="err-return">必填</div>
+  <div class="error-msg" id="err-dest">请至少填写一个目的地</div>
+
+  <div class="card">
+    <div class="card-label">文件设置</div>
+    <div class="field" style="border-bottom:none">
+      <div class="field-label">生成语言</div>
+      <select id="language">
+        <option value="zh">中文</option>
+        <option value="en">英文</option>
+        <option value="fr">法文</option>
+        <option value="de">德文</option>
+      </select>
+    </div>
   </div>
+
 </div>
 
-<div class="section">
-  <label>生成语言</label>
-  <select id="lang">
-    <option value="zh">中文</option>
-    <option value="en">英文</option>
-    <option value="fr">法文</option>
-    <option value="de">德文</option>
-    <option value="ja">日文</option>
-  </select>
+<div class="submit-wrap">
+  <button class="submit-btn" onclick="submitForm()">提交申请 · ¥10</button>
 </div>
-
-<button class="submit-btn" onclick="submitForm()">提交信息 →</button>
 
 <script>
   const tg = window.Telegram.WebApp;
   tg.ready();
   tg.expand();
 
-  // Set min dates
   const today = new Date().toISOString().split('T')[0];
-  document.getElementById('depart-date').min = today;
-  document.getElementById('return-date').min = today;
+  document.getElementById('depart').min = today;
+  document.getElementById('return').min = today;
 
   function addDest() {
     const list = document.getElementById('dest-list');
-    const row = document.createElement('div');
-    row.className = 'dest-row';
-    row.innerHTML = `<input type="text" placeholder="例：伦敦" /><button class="icon-btn del-btn" onclick="this.parentElement.remove()">×</button>`;
-    list.appendChild(row);
+    const num = list.children.length + 1;
+    const item = document.createElement('div');
+    item.className = 'dest-item';
+    item.innerHTML = `
+      <div class="dest-num">${num}</div>
+      <input type="text" placeholder="目的地城市" class="dest-input" />
+      <button class="dest-del" onclick="removeDest(this)">×</button>
+    `;
+    list.appendChild(item);
   }
 
-  function showError(id, show) {
+  function removeDest(btn) {
+    btn.closest('.dest-item').remove();
+    document.querySelectorAll('.dest-num').forEach((el, i) => el.textContent = i + 1);
+  }
+
+  function showErr(id, show) {
     document.getElementById(id).style.display = show ? 'block' : 'none';
   }
 
   function submitForm() {
-    let valid = true;
-
+    let ok = true;
     const origin = document.getElementById('origin').value.trim();
-    showError('err-origin', !origin);
-    if (!origin) valid = false;
+    showErr('err-origin', !origin);
+    if (!origin) ok = false;
 
-    const destInputs = document.querySelectorAll('#dest-list input');
-    const dests = Array.from(destInputs).map(i => i.value.trim()).filter(Boolean);
-    showError('err-dest', dests.length === 0);
-    if (dests.length === 0) valid = false;
+    const depart = document.getElementById('depart').value;
+    const ret = document.getElementById('return').value;
+    showErr('err-dates', !depart || !ret);
+    if (!depart || !ret) ok = false;
 
-    const depart = document.getElementById('depart-date').value;
-    showError('err-depart', !depart);
-    if (!depart) valid = false;
+    const dests = [...document.querySelectorAll('.dest-input')]
+      .map(i => i.value.trim()).filter(Boolean);
+    showErr('err-dest', dests.length === 0);
+    if (dests.length === 0) ok = false;
 
-    const ret = document.getElementById('return-date').value;
-    showError('err-return', !ret);
-    if (!ret) valid = false;
+    if (!ok) return;
 
-    if (!valid) return;
-
-    const data = {
+    tg.sendData(JSON.stringify({
       service: 'itinerary',
       origin,
       destinations: dests,
       depart_date: depart,
       return_date: ret,
-      language: document.getElementById('lang').value
-    };
-
-    tg.sendData(JSON.stringify(data));
+      language: document.getElementById('language').value,
+    }));
   }
 </script>
 </body>
