@@ -31,9 +31,7 @@
     background: var(--surface);
     padding: 20px 20px 16px;
     border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    position: sticky; top: 0; z-index: 10;
   }
   .header-icon { font-size: 28px; margin-bottom: 6px; }
   .header-title { font-size: 20px; font-weight: 700; letter-spacing: -0.4px; }
@@ -48,154 +46,139 @@
     margin-bottom: 12px;
   }
   .card-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--hint);
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
+    font-size: 11px; font-weight: 600; color: var(--hint);
+    text-transform: uppercase; letter-spacing: 0.6px;
     padding: 14px 16px 0;
   }
 
   .field {
     padding: 12px 16px;
     border-bottom: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    display: flex; flex-direction: column; gap: 4px;
   }
   .field:last-child { border-bottom: none; }
-  .field-label {
-    font-size: 12px;
-    color: var(--hint);
-    font-weight: 500;
-  }
+  .field-label { font-size: 12px; color: var(--hint); font-weight: 500; }
   .field input, .field select {
-    background: transparent;
-    border: none;
-    outline: none;
-    font-size: 16px;
-    color: var(--text);
-    width: 100%;
-    padding: 0;
-    font-family: inherit;
-    -webkit-appearance: none;
-    appearance: none;
+    background: transparent; border: none; outline: none;
+    font-size: 16px; color: var(--text); width: 100%;
+    padding: 0; font-family: inherit; -webkit-appearance: none; appearance: none;
   }
   .field select {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238e8e93' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0 center;
-    padding-right: 20px;
-    cursor: pointer;
+    background-repeat: no-repeat; background-position: right 0 center;
+    padding-right: 20px; cursor: pointer;
   }
   .field input::placeholder { color: var(--hint); opacity: 0.6; }
 
+  /* Date row — <label> wraps entire cell so any tap opens picker */
   .date-row {
-    padding: 0 16px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: grid; grid-template-columns: 1fr 1fr;
     border-bottom: 1px solid var(--border);
   }
   .date-row:last-child { border-bottom: none; }
-  .date-cell {
-    padding: 12px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  label.date-cell {
+    display: block;
+    padding: 12px 16px;
+    position: relative;
+    cursor: pointer;
   }
-  .date-cell:first-child { border-right: 1px solid var(--border); padding-right: 16px; }
-  .date-cell:last-child { padding-left: 16px; }
-  .date-cell .field-label { font-size: 12px; color: var(--hint); font-weight: 500; }
-  .date-cell input {
-    background: transparent;
-    border: none;
-    outline: none;
-    font-size: 16px;
-    color: var(--text);
-    width: 100%;
-    font-family: inherit;
-    -webkit-appearance: none;
+  label.date-cell:first-child { border-right: 1px solid var(--border); }
+  label.date-cell .field-label { font-size: 12px; color: var(--hint); font-weight: 500; margin-bottom: 4px; display: block; }
+  label.date-cell .date-val { font-size: 16px; color: var(--text); min-height: 22px; }
+  label.date-cell .date-val.empty { color: var(--hint); opacity: 0.6; }
+  /* Real input covers entire cell — invisible but receives taps */
+  label.date-cell input[type="date"] {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    opacity: 0; cursor: pointer;
+    border: none; background: transparent;
+    -webkit-appearance: none; appearance: none;
   }
 
+  /* Destinations */
   .dest-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
     border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
   }
+  .dest-item:last-of-type { border-bottom: none; }
+  .dest-top { display: flex; align-items: center; gap: 10px; }
   .dest-num {
-    width: 22px; height: 22px;
-    background: var(--accent);
-    color: white;
-    border-radius: 50%;
+    width: 22px; height: 22px; flex-shrink: 0;
+    background: var(--accent); color: white; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 700;
-    flex-shrink: 0;
   }
-  .dest-item input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    font-size: 16px;
-    color: var(--text);
-    font-family: inherit;
+  .dest-input {
+    flex: 1; background: transparent; border: none; outline: none;
+    font-size: 16px; color: var(--text); font-family: inherit;
   }
-  .dest-item input::placeholder { color: var(--hint); opacity: 0.6; }
+  .dest-input::placeholder { color: var(--hint); opacity: 0.6; }
   .dest-del {
-    background: none;
-    border: none;
-    color: #ff3b30;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 0 4px;
-    line-height: 1;
+    background: none; border: none; color: #ff3b30;
+    font-size: 20px; cursor: pointer; padding: 0 2px; line-height: 1; flex-shrink: 0;
   }
+
+  /* Days stepper — appears when multiple destinations and dates are set */
+  .days-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-top: 10px; padding-left: 32px;
+  }
+  .days-label { font-size: 13px; color: var(--hint); flex-shrink: 0; }
+  .stepper {
+    display: flex; align-items: center;
+    background: var(--bg); border-radius: 10px; overflow: hidden;
+  }
+  .step-btn {
+    width: 32px; height: 30px; border: none; background: transparent;
+    color: var(--accent); font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 300; line-height: 1; flex-shrink: 0;
+  }
+  .step-btn:disabled { color: var(--hint); opacity: 0.35; }
+  .step-val {
+    min-width: 30px; text-align: center;
+    font-size: 15px; font-weight: 600; color: var(--text);
+  }
+  .days-unit { font-size: 13px; color: var(--hint); }
+
+  /* Balance bar */
+  .days-balance {
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    display: none; align-items: center; justify-content: space-between;
+  }
+  .days-balance.visible { display: flex; }
+  .balance-left { font-size: 13px; color: var(--hint); }
+  .balance-right { font-size: 13px; font-weight: 600; }
+  .balance-right.ok { color: #34c759; }
+  .balance-right.warn { color: #ff9500; }
+
   .add-dest {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 16px;
-    cursor: pointer;
-    color: var(--accent);
-    font-size: 15px;
-    font-weight: 500;
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; cursor: pointer;
+    color: var(--accent); font-size: 15px; font-weight: 500;
+    border-top: 1px solid var(--border);
   }
   .add-dest-icon {
     width: 22px; height: 22px;
-    border: 1.5px solid var(--accent);
-    border-radius: 50%;
+    border: 1.5px solid var(--accent); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-size: 14px; line-height: 1;
   }
 
-  .error-msg {
-    font-size: 12px;
-    color: #ff3b30;
-    padding: 4px 16px 8px;
-    display: none;
-  }
+  .error-msg { font-size: 12px; color: #ff3b30; padding: 4px 16px 8px; display: none; }
 
   .submit-wrap {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
+    position: fixed; bottom: 0; left: 0; right: 0;
     padding: 12px 16px max(16px, env(safe-area-inset-bottom));
-    background: var(--bg);
-    border-top: 1px solid var(--border);
+    background: var(--bg); border-top: 1px solid var(--border);
   }
   .submit-btn {
-    width: 100%;
-    padding: 15px;
-    background: var(--accent);
-    color: var(--accent-text);
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s;
-    letter-spacing: -0.2px;
+    width: 100%; padding: 15px;
+    background: var(--accent); color: var(--accent-text);
+    border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s; letter-spacing: -0.2px;
   }
   .submit-btn:active { opacity: 0.8; }
 </style>
@@ -217,14 +200,16 @@
       <input id="origin" type="text" placeholder="例：上海" />
     </div>
     <div class="date-row">
-      <div class="date-cell">
-        <div class="field-label">出发日期</div>
-        <input id="depart" type="date" />
-      </div>
-      <div class="date-cell">
-        <div class="field-label">返回日期</div>
-        <input id="return" type="date" />
-      </div>
+      <label class="date-cell" for="depart">
+        <span class="field-label">出发日期</span>
+        <div class="date-val empty" id="depart-display">请选择</div>
+        <input id="depart" type="date" onchange="onDateChange()" />
+      </label>
+      <label class="date-cell" for="return">
+        <span class="field-label">返回日期</span>
+        <div class="date-val empty" id="return-display">请选择</div>
+        <input id="return" type="date" onchange="onDateChange()" />
+      </label>
     </div>
   </div>
   <div class="error-msg" id="err-origin">请填写出发地</div>
@@ -234,9 +219,15 @@
     <div class="card-label">目的地</div>
     <div id="dest-list">
       <div class="dest-item">
-        <div class="dest-num">1</div>
-        <input type="text" placeholder="例：巴黎" class="dest-input" />
+        <div class="dest-top">
+          <div class="dest-num">1</div>
+          <input type="text" placeholder="例：巴黎" class="dest-input" oninput="onDestInput()" />
+        </div>
       </div>
+    </div>
+    <div class="days-balance" id="days-balance">
+      <span class="balance-left">总行程 <strong id="total-days-num">0</strong> 天 · 已分配</span>
+      <span class="balance-right warn" id="balance-right">0 天</span>
     </div>
     <div class="add-dest" onclick="addDest()">
       <div class="add-dest-icon">+</div>
@@ -244,6 +235,7 @@
     </div>
   </div>
   <div class="error-msg" id="err-dest">请至少填写一个目的地</div>
+  <div class="error-msg" id="err-days">各目的地天数之和须等于总行程天数</div>
 
   <div class="card">
     <div class="card-label">文件设置</div>
@@ -273,22 +265,100 @@
   document.getElementById('depart').min = today;
   document.getElementById('return').min = today;
 
+  let totalDays = 0;
+
+  function fmt(val) {
+    if (!val) return null;
+    const [y, m, d] = val.split('-');
+    return `${y}/${m}/${d}`;
+  }
+
+  function onDateChange() {
+    const dv = document.getElementById('depart').value;
+    const rv = document.getElementById('return').value;
+    const dd = document.getElementById('depart-display');
+    const rd = document.getElementById('return-display');
+
+    if (dv) { dd.textContent = fmt(dv); dd.classList.remove('empty'); }
+    else     { dd.textContent = '请选择'; dd.classList.add('empty'); }
+    if (rv) { rd.textContent = fmt(rv); rd.classList.remove('empty'); }
+    else     { rd.textContent = '请选择'; rd.classList.add('empty'); }
+
+    totalDays = (dv && rv) ? Math.max(0, Math.round((new Date(rv) - new Date(dv)) / 86400000)) : 0;
+    refreshDays();
+  }
+
+  function onDestInput() { refreshDays(); }
+
+  function destItems() { return [...document.querySelectorAll('.dest-item')]; }
+  function isMulti() { return destItems().length > 1 && totalDays > 0; }
+
+  function refreshDays() {
+    const multi = isMulti();
+    destItems().forEach(item => {
+      let row = item.querySelector('.days-row');
+      if (multi && !row) {
+        row = document.createElement('div');
+        row.className = 'days-row';
+        row.innerHTML = `<span class="days-label">停留天数</span>
+          <div class="stepper">
+            <button class="step-btn" onclick="step(this,-1)">−</button>
+            <span class="step-val">1</span>
+            <button class="step-btn" onclick="step(this,1)">+</button>
+          </div>
+          <span class="days-unit">天</span>`;
+        item.appendChild(row);
+      } else if (!multi && row) {
+        row.remove();
+      }
+    });
+
+    const balance = document.getElementById('days-balance');
+    if (multi) {
+      balance.classList.add('visible');
+      document.getElementById('total-days-num').textContent = totalDays;
+      updateBalance();
+    } else {
+      balance.classList.remove('visible');
+    }
+  }
+
+  function step(btn, delta) {
+    const val = btn.closest('.stepper').querySelector('.step-val');
+    val.textContent = Math.max(1, parseInt(val.textContent) + delta);
+    updateBalance();
+  }
+
+  function allocated() {
+    return [...document.querySelectorAll('.step-val')].reduce((s, el) => s + parseInt(el.textContent), 0);
+  }
+
+  function updateBalance() {
+    const sum = allocated();
+    const br = document.getElementById('balance-right');
+    br.textContent = sum + ' 天';
+    br.className = 'balance-right ' + (sum === totalDays ? 'ok' : 'warn');
+  }
+
   function addDest() {
     const list = document.getElementById('dest-list');
     const num = list.children.length + 1;
     const item = document.createElement('div');
     item.className = 'dest-item';
     item.innerHTML = `
-      <div class="dest-num">${num}</div>
-      <input type="text" placeholder="目的地城市" class="dest-input" />
-      <button class="dest-del" onclick="removeDest(this)">×</button>
-    `;
+      <div class="dest-top">
+        <div class="dest-num">${num}</div>
+        <input type="text" placeholder="目的地城市" class="dest-input" oninput="onDestInput()" />
+        <button class="dest-del" onclick="removeDest(this)">×</button>
+      </div>`;
     list.appendChild(item);
+    refreshDays();
   }
 
   function removeDest(btn) {
     btn.closest('.dest-item').remove();
-    document.querySelectorAll('.dest-num').forEach((el, i) => el.textContent = i + 1);
+    destItems().forEach((el, i) => el.querySelector('.dest-num').textContent = i + 1);
+    refreshDays();
   }
 
   function showErr(id, show) {
@@ -297,6 +367,7 @@
 
   function submitForm() {
     let ok = true;
+
     const origin = document.getElementById('origin').value.trim();
     showErr('err-origin', !origin);
     if (!origin) ok = false;
@@ -306,19 +377,38 @@
     showErr('err-dates', !depart || !ret);
     if (!depart || !ret) ok = false;
 
-    const dests = [...document.querySelectorAll('.dest-input')]
-      .map(i => i.value.trim()).filter(Boolean);
-    showErr('err-dest', dests.length === 0);
-    if (dests.length === 0) ok = false;
+    const destInputs = [...document.querySelectorAll('.dest-input')];
+    const filled = destInputs.filter(i => i.value.trim());
+    showErr('err-dest', filled.length === 0);
+    if (filled.length === 0) ok = false;
+
+    const stepVals = [...document.querySelectorAll('.step-val')];
+    if (stepVals.length > 0 && totalDays > 0) {
+      const sum = allocated();
+      showErr('err-days', sum !== totalDays);
+      if (sum !== totalDays) ok = false;
+    } else {
+      showErr('err-days', false);
+    }
 
     if (!ok) return;
+
+    const destinations = destInputs
+      .filter(i => i.value.trim())
+      .map(inp => {
+        const sv = inp.closest('.dest-item').querySelector('.step-val');
+        const obj = { city: inp.value.trim() };
+        if (sv) obj.days = parseInt(sv.textContent);
+        return obj;
+      });
 
     tg.sendData(JSON.stringify({
       service: 'itinerary',
       origin,
-      destinations: dests,
+      destinations,
       depart_date: depart,
       return_date: ret,
+      total_days: totalDays || undefined,
       language: document.getElementById('language').value,
     }));
   }
